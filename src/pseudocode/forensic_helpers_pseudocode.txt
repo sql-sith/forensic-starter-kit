@@ -1,0 +1,13 @@
+SET forensicOn = true
+SET correlationId = generate_uuid()
+SET forensicStart = current_utc_time()
+
+FUNCTION forensicLog(message, startTime, level="INFO"):
+    IF forensicOn:
+        now = current_utc_time()
+        elapsedMs = milliseconds_between(startTime, now)
+        print_json({ts: now_iso, elapsed_ms: elapsedMs, corr_id: correlationId, level: level, msg: message})
+
+FUNCTION forensicCheck(condition, message):
+    IF forensicOn AND NOT condition:
+        forensicLog(message, forensicStart, "WARN")
