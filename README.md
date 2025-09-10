@@ -13,15 +13,28 @@ This kit gives you **drop‑in helpers** for:
 
 ## Languages Included
 
-- **Bash** — Functions and a subshell trap‑based scope.
-- **C#** — Static helper methods with a `ForensicScope` `IDisposable` class for scoped timing.
-- **Go** — Functions with a `withForensicScope` higher‑order function for scoped timing.
-- **Node.js** — Functions and a `withForensicScope` wrapper.
-- **PowerShell** — Functions plus an `IDisposable` class for scoped timing.
-- **Python** — Functions and a `@contextmanager` scope.
-- **T‑SQL** — `ForensicLog` and `ForensicCheck` stored procedures, TRY/FINALLY scoped timers.
-- **Generic pseudocode** — For adapting the pattern to other languages.
+- **Bash** — Functions and a subshell trap‑based scope (idiomatic), plus `forensicScope "Name" command...` for cross‑language parity.
+- **C#** — Static helper methods with a `ForensicScope` `IDisposable` class for idiomatic `using` blocks, plus `forensicScope(name, Action)` for cross‑language parity.
+- **Go** — Functions with an idiomatic `StartScope(name)`/`defer end()` pattern, plus `forensicScope(name, fn)` for cross‑language parity.
+- **Node.js** — Functions with `forensicScope(name, fn)` for cross‑language parity; idiomatic usage via `try/finally` block.
+- **PowerShell** — Functions plus a `ForensicScope` `IDisposable` class for idiomatic `using` blocks, plus `forensicScope "Name" {}` for cross‑language parity.
+- **Python** — Functions with an idiomatic `with forensic_scope(name):` context manager, plus `forensicScope(name, fn)` for cross‑language parity.
+- **T‑SQL** — `forensicLog` and `forensicCheck` stored procedures, plus `forensicScope @Name, @Mode` for cross‑language parity; idiomatic usage via TRY/FINALLY.
+- **Generic pseudocode** — For adapting the pattern to other languages, including both parity and idiomatic scope options where applicable.
 
+
+## Scope Options at a Glance
+
+| Language     | Cross‑Language Parity Scope                           | Idiomatic Scope Option                          |
+|--------------|-------------------------------------------------------|-------------------------------------------------|
+| **Bash**     | `forensicScope "MyBlock" sleep 0.2`                    | Subshell/trap:<br>`(_forensic_scope_start "MyBlock"; sleep 0.2; _forensic_scope_end "MyBlock")` |
+| **C#**       | `Forensic.forensicScope("MyBlock", () => { /*...*/ });`| `using (new Forensic.ForensicScope("MyBlock")) { /*...*/ }` |
+| **Go**       | `forensicScope("MyBlock", func() { /*...*/ })`         | `end := startScope("MyBlock"); defer end()`     |
+| **Node.js**  | `forensicScope("MyBlock", () => { /*...*/ });`         | `const start = new Date(); forensicLog("MyBlock start", start); try { /*...*/ } finally { forensicLog("MyBlock end", start); }` |
+| **PowerShell**| `forensicScope "MyBlock" { /*...*/ }`                 | `using ($scope = [ForensicScope]::new("MyBlock")) { /*...*/ }` |
+| **Python**   | `forensicScope("MyBlock", lambda: do_work())`          | `with forensic_scope("MyBlock"):\n    do_work()` |
+| **T‑SQL**    | `EXEC dbo.forensicScope @Name = N'MyBlock', @Mode = N'start'; /*...*/ EXEC dbo.forensicScope @Name = N'MyBlock', @Mode = N'end';` | TRY/FINALLY:<br>`EXEC dbo.forensicScope @Name = @BlockName, @Mode = N'start'; BEGIN TRY /*...*/ END TRY BEGIN FINALLY EXEC dbo.forensicScope @Name = @BlockName, @Mode = N'end'; END FINALLY;` |
+| **Pseudocode**| `forensicScope("MyBlock", fn)`                        | `with forensic_scope("MyBlock"):\n    fn()`     |
 
 ## Output Format
 

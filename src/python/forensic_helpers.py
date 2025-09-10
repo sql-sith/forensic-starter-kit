@@ -43,7 +43,7 @@ from typing import Callable
 
 forensicOn = True
 correlationId = str(uuid.uuid4())
-forensicStart = datetime.timezone.utc()
+forensicStart = datetime.datetime.utcnow()
 
 def forensicLog(message: str, start_time: datetime.datetime, level: str = "INFO") -> None:
     """Log a JSON‑formatted forensic message with elapsed ms since start_time."""
@@ -78,18 +78,3 @@ def forensicScope(name: str, fn: Callable[[], None]) -> None:
     """Cross‑language parity wrapper for scoped forensic timing."""
     with forensic_scope(name):
         fn()
-
-SELECT
-    des.session_id,
-    des.login_time,
-    des.host_name,
-    des.program_name,
-    des.host_process_id,
-    des.client_version,
-    des.client_interface_name,
-    des.login_name,
-    des.nt_domain,
-    des.nt_user_name,
-    des.status
-FROM sys.dm_exec_sessions as des
-WHERE des.session_id = @@SPID;
